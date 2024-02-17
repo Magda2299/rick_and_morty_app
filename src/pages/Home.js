@@ -36,12 +36,13 @@ const Home = () => {
 
   useEffect(() => {
     //Kada se pretrazeni podaci promene update-ujemo filtrirane karaktere
+    console.log("dsdcss");
     setCharacters(searchResults);
     setFilteredCharacters(searchResults);
   }, [searchResults]);
 
   const handleFilterChange = (filters) => {
-    //filtriramo po kriterijumima
+    console.log(filters, "fd");
     const filtered = characters.filter((character) => {
       if (filters.any && character.status === "Any") {
         return false;
@@ -74,7 +75,9 @@ const Home = () => {
     //Update sortirano
     setFilteredCharacters(sorted);
   };
-
+  useEffect(() => {
+    handleFilterChange(characters);
+  }, [sortOrder]);
   useEffect(() => {
     setCharacters(searchResults);
   }, [searchResults]);
@@ -87,7 +90,7 @@ const Home = () => {
 
       <div className="container flex flex-col w-full">
         <div className=" flex flex-wrap justify-center gap-8 p-8 ">
-          {character.map((character) => (
+          {filteredCharacters.map((character) => (
             <div className="flex-row items center justify-center md:flex md:flex-col font-bold items-center md:w-[20%]  bg-white rounded-lg">
               <img
                 className="card-character rounded-lg h-auto md:h-[200px] md:w-full"

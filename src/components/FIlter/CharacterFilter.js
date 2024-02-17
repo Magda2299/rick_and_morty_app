@@ -18,6 +18,7 @@ const CharacterFilter = ({ onFilterChange }) => {
     updatedFilters[filter] = !filters[filter];
     setFilters(updatedFilters);
     onFilterChange(updatedFilters);
+    console.log("object");
   };
 
   return (

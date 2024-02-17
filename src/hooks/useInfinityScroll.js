@@ -10,11 +10,20 @@ const useInfiniteScroll = (initialCharacters) => {
     try {
       console.log("offset:", offset);
       const response = await instance.get(
-        `/character/?offset=${offset}&limit=30`
+        `/character/?offset=${offset}&limit=20`
       );
       const newCharacters = response.data.results;
+      const uniqueNewCharacters = newCharacters.filter(
+        (newChar) =>
+          !character.some((existingChar) => existingChar.id === newChar.id)
+      );
 
-      setCharacters((prevCharacters) => [...prevCharacters, ...newCharacters]);
+      setCharacters((prevCharacters) => [
+        ...prevCharacters,
+        ...uniqueNewCharacters,
+      ]);
+      //console.log(uniqueNewCharacters, "unique");
+      //console.log(newCharacters, "new");
       setOffset((prevOffset) => prevOffset + 20);
     } catch (error) {
       console.error("Error fetching data:", error);
