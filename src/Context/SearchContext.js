@@ -9,10 +9,10 @@ export const SearchProvider = ({ children }) => {
 
   const handleSearch = async () => {
     try {
-      console.log("ssss", searchTerm);
+      //console.log("ssss", searchTerm);
       if (searchTerm.trim() !== "") {
         const response = await instance.get(`/character/?name=${searchTerm}`);
-        console.log(response.data.results, "ddd");
+        //  console.log(response.data.results, "ddd");
         setSearchResults(response.data.results);
       } else {
         setSearchResults([]);

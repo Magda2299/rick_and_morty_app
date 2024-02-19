@@ -1,65 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const CharacterFilter = ({ onFilterChange }) => {
-  const [filters, setFilters] = useState({
-    alive: false,
-    dead: false,
-    unknown: false,
-    any: false,
-  });
+  const [selectedFilter, setSelectedFilter] = useState("any");
 
   const handleFilterChange = (filter) => {
-    const updatedFilters = {
-      any: false,
-      alive: false,
-      dead: false,
-      unknown: false,
-    }; // Reset
-    updatedFilters[filter] = !filters[filter];
-    setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
-    console.log("object");
+    setSelectedFilter(filter);
+    onFilterChange(filter);
   };
 
   return (
     <div className="filter-wrapper flex p-8 gap-5">
       <h3>Character status:</h3>
-      <label className="">
-        <input
-          className="mr-2"
-          type="radio"
-          checked={filters.any}
-          onChange={() => handleFilterChange()}
-        />
-        Any
-      </label>
-      <label>
-        <input
-          className="mr-2"
-          type="radio"
-          checked={filters.alive}
-          onChange={() => handleFilterChange("alive")}
-        />
-        Alive
-      </label>
-      <label>
-        <input
-          className="mr-2"
-          type="radio"
-          checked={filters.dead}
-          onChange={() => handleFilterChange("dead")}
-        />
-        Dead
-      </label>
-      <label>
-        <input
-          className="mr-2"
-          type="radio"
-          checked={filters.unknown}
-          onChange={() => handleFilterChange("unknown")}
-        />
-        Unknown
-      </label>
+      {["any", "alive", "dead", "unknown"].map((filter) => (
+        <label key={filter}>
+          <input
+            className="mr-2"
+            type="radio"
+            checked={selectedFilter === filter}
+            onChange={() => handleFilterChange(filter)}
+          />
+          {filter.charAt(0).toUpperCase() + filter.slice(1)}
+        </label>
+      ))}
     </div>
   );
 };

@@ -1,85 +1,53 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import instance from "../infrastructure/services/axios";
 import "./Home.css";
-import CharacterFilter from "../components/FIlter/CharacterFilter";
 import { useSearch } from "../Context/SearchContext";
+import useCharacterData from "../hooks/useCharacterData";
+import CharacterFilter from "../components/FIlter/CharacterFilter";
 import useInfiniteScroll from "../hooks/useInfinityScroll";
 
 const Home = () => {
-  const [characters, setCharacters] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFilter, setSelectedFilter] = useState("any");
+  const { characters, loading, error, fetchCharacters } = useCharacterData();
   const [filteredCharacters, setFilteredCharacters] = useState([]);
-
-  const [sortOrder, setSortOrder] = useState("asc");
-  const character = useInfiniteScroll(filteredCharacters);
   const { searchResults } = useSearch();
+  const containerRef = useInfiniteScroll(() => {
+    fetchCharacters();
+  });
 
-  const getAllCharacters = async () => {
-    try {
-      const response = await instance.get("character");
-      const charactersData = response.data.results;
-      setCharacters(charactersData);
-      setFilteredCharacters(charactersData);
-    } catch (error) {
-      console.error(
-        "Error fetching characters:",
-        error.response ? error.response.status : error.message
-      );
-      throw error;
-    }
+  const handleFilterChange = (filter) => {
+    setSelectedFilter(filter);
   };
 
+  const filterCharacters = () => {
+    switch (selectedFilter) {
+      case "any":
+        setFilteredCharacters(characters);
+        break;
+      case "alive":
+      case "dead":
+      case "unknown":
+        const filtered = characters.filter(
+          (character) =>
+            character.status.toLowerCase() === selectedFilter.toLowerCase()
+        );
+        setFilteredCharacters(filtered);
+        //   console.log(` '${selectedFilter}':`, filtered);
+        break;
+      default:
+        break;
+    }
+  };
   useEffect(() => {
-    getAllCharacters();
+    // Fetch characters on component mount
+    fetchCharacters();
   }, []);
 
   useEffect(() => {
-    //Kada se pretrazeni podaci promene update-ujemo filtrirane karaktere
-    console.log("dsdcss");
-    setCharacters(searchResults);
+    filterCharacters();
+  }, [characters, selectedFilter]);
+  useEffect(() => {
     setFilteredCharacters(searchResults);
-  }, [searchResults]);
-
-  const handleFilterChange = (filters) => {
-    console.log(filters, "fd");
-    const filtered = characters.filter((character) => {
-      if (filters.any && character.status === "Any") {
-        return false;
-      }
-      if (filters.alive && character.status === "Alive") {
-        return true;
-      }
-      if (filters.dead && character.status === "Dead") {
-        return true;
-      }
-      if (filters.unknown && character.status === "unknown") {
-        return true;
-      }
-      return false;
-    });
-
-    //sortiranje
-    sortCharacters(filtered, sortOrder);
-  };
-  //sortiranje
-  const sortCharacters = (charactersToSort, order) => {
-    const sorted = [...charactersToSort].sort((a, b) => {
-      if (order === "asc") {
-        return a.name.localeCompare(b.name);
-      } else {
-        return b.name.localeCompare(a.name);
-      }
-    });
-
-    //Update sortirano
-    setFilteredCharacters(sorted);
-  };
-  useEffect(() => {
-    handleFilterChange(characters);
-  }, [sortOrder]);
-  useEffect(() => {
-    setCharacters(searchResults);
   }, [searchResults]);
 
   return (
@@ -88,12 +56,15 @@ const Home = () => {
         <CharacterFilter onFilterChange={handleFilterChange} />
       </div>
 
-      <div className="container flex flex-col w-full">
-        <div className=" flex flex-wrap justify-center gap-8 p-8 ">
+      <div className="  container flex flex-col w-full">
+        <div
+          ref={containerRef}
+          className=" h-[700px]  overflow-y-auto flex flex-wrap justify-center gap-8 p-8 "
+        >
           {filteredCharacters.map((character) => (
             <div className="flex-row items center justify-center md:flex md:flex-col font-bold items-center md:w-[20%]  bg-white rounded-lg">
               <img
-                className="card-character rounded-lg h-auto md:h-[200px] md:w-full"
+                className="card-character rounded-lg h-fit md:w-full"
                 src={character.image}
                 alt={character.name}
               ></img>
@@ -103,7 +74,12 @@ const Home = () => {
               </p>
             </div>
           ))}
-          <div></div>
+
+          <div>
+            {" "}
+            {loading && <p>Loading...</p>}
+            {error && <p>Error: {error}</p>}
+          </div>
         </div>
       </div>
     </div>

@@ -1,62 +1,38 @@
-// useInfiniteScroll.js
-import { useState, useEffect } from "react";
-import instance from "../infrastructure/services/axios";
+import { useEffect, useRef } from "react";
 
-const useInfiniteScroll = (initialCharacters) => {
-  const [character, setCharacters] = useState(initialCharacters);
-  const [offset, setOffset] = useState(initialCharacters.length);
-
-  const fetchData = async () => {
-    try {
-      console.log("offset:", offset);
-      const response = await instance.get(
-        `/character/?offset=${offset}&limit=20`
-      );
-      const newCharacters = response.data.results;
-      const uniqueNewCharacters = newCharacters.filter(
-        (newChar) =>
-          !character.some((existingChar) => existingChar.id === newChar.id)
-      );
-
-      setCharacters((prevCharacters) => [
-        ...prevCharacters,
-        ...uniqueNewCharacters,
-      ]);
-      //console.log(uniqueNewCharacters, "unique");
-      //console.log(newCharacters, "new");
-      setOffset((prevOffset) => prevOffset + 20);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  const handleScroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop ===
-      document.documentElement.offsetHeight
-    ) {
-      console.log("Scroll radi");
-      fetchData();
-    }
-  };
+const useInfiniteScroll = (onScrollEnd) => {
+  const containerRef = useRef();
 
   useEffect(() => {
-    console.log("Initial data fetch");
-    fetchData();
-  }, []); // Fetch initial data
+    const container = containerRef.current;
 
-  useEffect(() => {
-    if (offset === initialCharacters.length) {
-      fetchData();
-    }
+    const handleScroll = () => {
+      //  console.log("scrolling...");
+      if (container) {
+        // console.log("scrollTop:", container.scrollTop);
+        // console.log("clientHeight:", container.clientHeight);
+        // console.log("scrollHeight:", container.scrollHeight);
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
+        if (
+          container.scrollTop + container.clientHeight >=
+          container.scrollHeight
+        ) {
+          // console.log("Loading more data...");
+          onScrollEnd();
+        }
+      }
     };
-  }, [offset, initialCharacters.length]);
 
-  return character;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+
+      return () => {
+        container.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, [onScrollEnd]);
+
+  return containerRef;
 };
 
 export default useInfiniteScroll;
